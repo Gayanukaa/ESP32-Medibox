@@ -8,24 +8,30 @@
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
 
+// Pin Definitions
 #define BUZZER 5
 #define LED_1 15
+#define LED_TEMP 13
+#define LED_HUM 2
 #define PB_CANCEL 34
 #define PB_OK 32
 #define PB_UP 33
 #define PB_DOWN 35
 #define DHTPIN 12
 
+// NTP Configuration
 #define NTP_SERVER     "pool.ntp.org"
 #define UTC_OFFSET     0
 #define UTC_OFFSET_DST 0
 
+// Initialize DHT Sensor
 DHTesp dhtSensor;
 
+// OLED Display Configuration
 #define SCREEN_ADDRESS 0x3C
-Adafruit_SSD1306 display(SCREEN_WIDTH,SCREEN_HEIGHT,&Wire,OLED_RESET);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-//Global variables
+// Global variables for time
 int days = 0;
 int hours = 0;
 int minutes = 0;
@@ -34,12 +40,14 @@ int seconds = 0;
 unsigned long timeNow = 0;
 unsigned long timeLast = 0;
 
+// Alarm configuration
 bool alarm_enabled = true;
 int n_alarms = 2;
 int alarm_hours[] = {0, 1};
 int alarm_minutes[] = {1, 10};
 bool alarm_triggered[] = {false, false};
 
+// Musical notes for the buzzer
 int n_notes = 8;
 int C = 262;
 int D = 294;
@@ -51,109 +59,133 @@ int B = 494;
 int C_H = 523;
 int notes[] = {C, D, E, F, G, A, B, C_H};
 
+// User interface configuration
 int current_mode = 0;
 int max_modes = 4;
 String modes[] = {"1 - Set Time", "2 - Set Alarm 1", "3 - Set Alarm 2", "4 - Disable Alarms"};
 
 
 void setup() {
-  // put your setup code here, to run once:
+  // Setup function - runs once
 
+  // Initialize DHT Sensor
   dhtSensor.setup(DHTPIN, DHTesp::DHT22);
 
+  // Set up pin modes
   pinMode(BUZZER, OUTPUT);
   pinMode(LED_1, OUTPUT);
+  pinMode(LED_TEMP, OUTPUT);
+  pinMode(LED_HUM, OUTPUT);
   pinMode(PB_CANCEL, INPUT);
   pinMode(PB_OK, INPUT);
   pinMode(PB_UP, INPUT);
   pinMode(PB_DOWN, INPUT);
 
   // Initialize serial monitor and OLED display
-  Serial.begin (9600);
-  if(! display.begin(SSD1306_SWITCHCAPVCC,SCREEN_ADDRESS)){
+  Serial.begin(9600);
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
-    for(;;);
+    for (;;);
   }
 
-  //turn on OLED display
+  // Turn on OLED display
   display.display();
-  delay (2000);
+  delay(2000);
 
-
-  WiFi.begin("Wokwi-GUEST", "",6);
+  // Connect to Wi-Fi
+  WiFi.begin("Wokwi-GUEST", "", 6);
   while (WiFi.status() != WL_CONNECTED) {
     delay(250);
     display.clearDisplay();
-    print_line("Connecting to WIFI", 0, 0, 2);
+    print_line("Connecting to WIFI..", 0, 10, 2);
   }
 
   display.clearDisplay();
-  print_line("Connected to WIFI", 0, 0, 2);
+  print_line("Connected to WIFI", 0, 10, 2);
 
+  // Configure NTP time synchronization
   configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
 
-  // clear OLED display
+  // Clear OLED display
   display.clearDisplay();
 
-  print_line("Welcome to MediBox!", 10, 20, 2);
+  // Display welcome message
+  print_line("Welcome to MediBox!", 0, 10, 2);
   display.clearDisplay();
-  
 }
 
 void loop() {
+  // Main loop function
+
+  // Update time and check for alarms
   update_time_with_check_alarm();
 
+  // Check if the OK button is pressed to navigate to the menu
   if (digitalRead(PB_OK) == LOW) {
-    delay(200); //to bounce push button
+    delay(200); // Debouncing push button
     go_to_menu();
   }
 
+  // Check temperature and humidity
   check_temp();
 }
 
-void print_line(String text, int column, int row, int text_size){
+// Function to print a line on the OLED display
+void print_line(String text, int column, int row, int text_size) {
   display.setTextSize(text_size);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(column,row);
+  display.setCursor(column, row);
   display.println(text);
   display.display();
+}
+
+// Function to print the current time on the OLED display
+void print_time_now(void) {
+  display.clearDisplay();
+
+  struct tm timeinfo;
+  getLocalTime(&timeinfo);
+
+  char timeDay[4];
+  strftime(timeDay, 4, "%a", &timeinfo);  //day of the week
+  print_line(String(timeDay), 10, 0, 2);
+
+  print_line(" ", 30, 0, 2);
+
+  char timeDate[3];
+  strftime(timeDate, 3, "%d", &timeinfo);  //day of the month
+  print_line(String(timeDate), 50, 0, 2);
+
+  char timeHour[3];
+  strftime(timeHour, 3, "%H", &timeinfo);  //hour in 24-hour format
+  print_line(String(timeHour), 10, 25, 2);
+
+  print_line(":", 30, 25, 2);
+
+  char timeMinute[3];
+  strftime(timeMinute, 3, "%M", &timeinfo);  //minute
+  print_line(String(timeMinute), 40, 25, 2);
+
+  print_line(":", 60, 25, 2);
+
+  char timeSecond[3];
+  strftime(timeSecond, 3, "%S", &timeinfo);  //second
+  print_line(String(timeSecond), 70, 25, 2);
 
   display.display();
 }
 
-void print_time_now(void){
-  display.clearDisplay();
-  print_line(String(days), 0, 0, 2);
-  print_line(":", 20, 0, 2);
-  print_line(String(hours), 30, 0, 2);
-  print_line(":" , 50, 0, 2);
-  print_line (String(minutes), 60, 0, 2);
-  print_line(":", 80, 0, 2);
-  print_line(String(seconds), 90, 0, 2);
-}
-
-void update_time(){
+// Function to update the time
+void update_time() {
   struct tm timeinfo;
+  getLocalTime(&timeinfo, UTC_OFFSET);
 
-  getLocalTime(&timeinfo);
-
-  char timeHour[3];
-  strftime(timeHour, 3, "%H", &timeinfo);
-  hours = atoi(timeHour);
-
-  char timeMinute[3];
-  strftime(timeMinute, 3, "%M", &timeinfo);
-  minutes = atoi(timeMinute);
-
-  char timeSecond[3];
-  strftime(timeSecond, 3, "%S", &timeinfo);
-  seconds = atoi(timeSecond);
-
-  char timeDay[3];
-  strftime(timeDay, 3, "%d", &timeinfo);
-  days = atoi(timeDay);
+  hours = timeinfo.tm_hour;
+  minutes = timeinfo.tm_min;
+  seconds = timeinfo.tm_sec;
 }
 
+// Function to ring the alarm
 void ring_alarm() {
   display.clearDisplay();
   print_line("MEDICINE TIME!", 0, 0, 2);
@@ -179,9 +211,9 @@ void ring_alarm() {
 
   digitalWrite(LED_1, LOW);
   display.clearDisplay();
-
 }
 
+// Function to update time and check for alarms
 void update_time_with_check_alarm(void) {
   update_time();
   print_time_now();
@@ -196,24 +228,19 @@ void update_time_with_check_alarm(void) {
   }
 }
 
+// Function to wait for a button press
 int wait_for_button_press() {
   while (true) {
     if (digitalRead(PB_UP) == LOW) {
       delay(200);
       return PB_UP;
-    }
-
-    else if (digitalRead(PB_DOWN) == LOW) {
+    } else if (digitalRead(PB_DOWN) == LOW) {
       delay(200);
       return PB_DOWN;
-    }
-
-    else if (digitalRead(PB_OK) == LOW) {
+    } else if (digitalRead(PB_OK) == LOW) {
       delay(200);
       return PB_OK;
-    }
-
-    else if (digitalRead(PB_CANCEL) == LOW) {
+    } else if (digitalRead(PB_CANCEL) == LOW) {
       delay(200);
       return PB_CANCEL;
     }
@@ -222,6 +249,7 @@ int wait_for_button_press() {
   }
 }
 
+// Function to navigate to the menu
 void go_to_menu() {
   while (digitalRead(PB_CANCEL) == HIGH) {
     display.clearDisplay();
@@ -232,30 +260,24 @@ void go_to_menu() {
       delay(200);
       current_mode += 1;
       current_mode = current_mode % max_modes;
-    }
-
-    else if (pressed == PB_DOWN) {
+    } else if (pressed == PB_DOWN) {
       delay(200);
       current_mode -= 1;
       if (current_mode < 0) {
         current_mode = max_modes - 1;
       }
-    }
-
-    else if (pressed == PB_OK) {
+    } else if (pressed == PB_OK) {
       delay(200);
       run_mode(current_mode);
-    }
-
-    else if (pressed == PB_CANCEL) {
+    } else if (pressed == PB_CANCEL) {
       delay(200);
       break;
     }
   }
 }
 
+// Function to set the time
 void set_time() {
-
   int temp_hour = hours;
   while (true) {
     display.clearDisplay();
@@ -266,23 +288,17 @@ void set_time() {
       delay(200);
       temp_hour += 1;
       temp_hour = temp_hour % 24;
-    }
-
-    else if (pressed == PB_DOWN) {
+    } else if (pressed == PB_DOWN) {
       delay(200);
       temp_hour -= 1;
       if (temp_hour < 0) {
         temp_hour = 23;
       }
-    }
-
-    else if (pressed == PB_OK) {
+    } else if (pressed == PB_OK) {
       delay(200);
       hours = temp_hour;
       break;
-    }
-
-    else if (pressed == PB_CANCEL) {
+    } else if (pressed == PB_CANCEL) {
       delay(200);
       break;
     }
@@ -298,23 +314,17 @@ void set_time() {
       delay(200);
       temp_minute += 1;
       temp_minute = temp_minute % 60;
-    }
-
-    else if (pressed == PB_DOWN) {
+    } else if (pressed == PB_DOWN) {
       delay(200);
       temp_minute -= 1;
       if (temp_minute < 0) {
         temp_minute = 59;
       }
-    }
-
-    else if (pressed == PB_OK) {
+    } else if (pressed == PB_OK) {
       delay(200);
       minutes = temp_minute;
       break;
-    }
-
-    else if (pressed == PB_CANCEL) {
+    } else if (pressed == PB_CANCEL) {
       delay(200);
       break;
     }
@@ -325,8 +335,8 @@ void set_time() {
   delay(1000);
 }
 
+// Function to set an alarm
 void set_alarm(int alarm) {
-
   int temp_hour = alarm_hours[alarm];
   while (true) {
     display.clearDisplay();
@@ -337,23 +347,17 @@ void set_alarm(int alarm) {
       delay(200);
       temp_hour += 1;
       temp_hour = temp_hour % 24;
-    }
-
-    else if (pressed == PB_DOWN) {
+    } else if (pressed == PB_DOWN) {
       delay(200);
       temp_hour -= 1;
       if (temp_hour < 0) {
         temp_hour = 23;
       }
-    }
-
-    else if (pressed == PB_OK) {
+    } else if (pressed == PB_OK) {
       delay(200);
       alarm_hours[alarm] = temp_hour;
       break;
-    }
-
-    else if (pressed == PB_CANCEL) {
+    } else if (pressed == PB_CANCEL) {
       delay(200);
       break;
     }
@@ -369,23 +373,17 @@ void set_alarm(int alarm) {
       delay(200);
       temp_minute += 1;
       temp_minute = temp_minute % 60;
-    }
-
-    else if (pressed == PB_DOWN) {
+    } else if (pressed == PB_DOWN) {
       delay(200);
       temp_minute -= 1;
       if (temp_minute < 0) {
         temp_minute = 59;
       }
-    }
-
-    else if (pressed == PB_OK) {
+    } else if (pressed == PB_OK) {
       delay(200);
       alarm_minutes[alarm] = temp_minute;
       break;
-    }
-
-    else if (pressed == PB_CANCEL) {
+    } else if (pressed == PB_CANCEL) {
       delay(200);
       break;
     }
@@ -396,6 +394,7 @@ void set_alarm(int alarm) {
   delay(1000);
 }
 
+// Function to run the selected mode
 void run_mode(int mode) {
   if (mode == 0) {
     set_time();
@@ -411,19 +410,30 @@ void run_mode(int mode) {
 
 }
 
+// Function to check temperature and humidity
 void check_temp() {
   TempAndHumidity data = dhtSensor.getTempAndHumidity();
-  if (data.temperature > 35) {
-    print_line("TEMP HIGH", 0, 40, 1);
-  }
-  else if (data.temperature < 25) {
-    print_line("TEMP LOW", 0, 40, 1);
+  if (data.temperature > 32) {
+    print_line("TEMP HIGH", 10, 45, 1);
+    digitalWrite(LED_TEMP, HIGH);
+    delay(30);
+    digitalWrite(LED_TEMP,LOW);
+  } else if (data.temperature < 26) {
+    print_line("TEMP LOW", 10, 45, 1);
+    digitalWrite(LED_TEMP, HIGH);
+    delay(30);
+    digitalWrite(LED_TEMP,LOW);
   }
 
-  if (data.humidity > 40) {
-    print_line("HUMIDITY HIGH", 0, 50, 1);
-  }
-  else if (data.humidity < 20) {
-    print_line("HUMIDITY LOW", 0, 50, 1);
+  if (data.humidity > 80) {
+    print_line("HUMIDITY HIGH", 10, 55, 1);
+    digitalWrite(LED_HUM, HIGH);
+    delay(30);
+    digitalWrite(LED_HUM,LOW);
+  } else if (data.humidity < 60) {
+    print_line("HUMIDITY LOW", 10, 55, 1);
+    digitalWrite(LED_HUM, HIGH);
+    delay(30);
+    digitalWrite(LED_HUM,LOW);
   }
 }
