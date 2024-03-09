@@ -9,7 +9,7 @@
 #define OLED_RESET -1
 
 // Pin Definitions
-#define BUZZER 5
+#define BUZZER 4
 #define LED_1 15
 #define LED_TEMP 13
 #define LED_HUM 2
@@ -17,11 +17,11 @@
 #define PB_OK 32
 #define PB_UP 33
 #define PB_DOWN 35
-#define DHTPIN 12
+#define DHTPIN 14
 
 // NTP Configuration
 #define NTP_SERVER     "pool.ntp.org"
-#define UTC_OFFSET     0
+#define UTC_OFFSET     19800
 #define UTC_OFFSET_DST 0
 
 // Initialize DHT Sensor
@@ -42,10 +42,12 @@ unsigned long timeLast = 0;
 
 // Alarm configuration
 bool alarm_enabled = true;
-int n_alarms = 2;
-int alarm_hours[] = {0, 1};
-int alarm_minutes[] = {1, 10};
-bool alarm_triggered[] = {false, false};
+int n_alarms = 3;
+//centred number for easy choose
+int alarm_hours[] = {12, 12, 12};
+int alarm_minutes[] = {27, 27, 27};
+bool alarm_triggered[] = {false, false, false};
+
 
 // Musical notes for the buzzer
 int n_notes = 8;
@@ -61,9 +63,8 @@ int notes[] = {C, D, E, F, G, A, B, C_H};
 
 // User interface configuration
 int current_mode = 0;
-int max_modes = 4;
-String modes[] = {"1 - Set Time", "2 - Set Alarm 1", "3 - Set Alarm 2", "4 - Disable Alarms"};
-
+int max_modes = 5;
+String modes[] = {"1 - Set Time", "2 - Set Alarm 1", "3 - Set Alarm 2", "4 - Set Alarm 3", "5 - Disable Alarms"};
 
 void setup() {
   // Setup function - runs once
@@ -188,14 +189,14 @@ void update_time() {
 // Function to ring the alarm
 void ring_alarm() {
   display.clearDisplay();
-  print_line("MEDICINE TIME!", 0, 0, 2);
+  print_line("TAKE YOUR MEDICINE!", 0, 0, 2);
 
   digitalWrite(LED_1, HIGH);
 
   bool break_happened = false;
 
   // Ring the buzzer
-  while (digitalRead(PB_CANCEL) == HIGH) {
+  while (break_happened == false && digitalRead(PB_CANCEL) == HIGH) {
     for (int i = 0; i < n_notes; i++) {
       if (digitalRead(PB_CANCEL) == LOW) {
         delay(200);
@@ -398,42 +399,34 @@ void set_alarm(int alarm) {
 void run_mode(int mode) {
   if (mode == 0) {
     set_time();
-  }
-
-  else if (mode == 1 || mode == 2) {
+  } else if (mode == 1 || mode == 2 || mode == 3) {
     set_alarm(mode - 1);
-  }
-
-  else if (mode == 3) {
+  } else if (mode == 4) {
     alarm_enabled = false;
+    print_line("Alarms Disabled", 0, 0, 2)
   }
-
 }
 
 // Function to check temperature and humidity
 void check_temp() {
   TempAndHumidity data = dhtSensor.getTempAndHumidity();
   if (data.temperature > 32) {
-    print_line("TEMP HIGH", 10, 45, 1);
     digitalWrite(LED_TEMP, HIGH);
-    delay(30);
+    print_line("TEMPETATURE HIGH", 10, 45, 1);
     digitalWrite(LED_TEMP,LOW);
   } else if (data.temperature < 26) {
-    print_line("TEMP LOW", 10, 45, 1);
     digitalWrite(LED_TEMP, HIGH);
-    delay(30);
+    print_line("TEMPETATURE LOW", 10, 45, 1);
     digitalWrite(LED_TEMP,LOW);
   }
 
   if (data.humidity > 80) {
-    print_line("HUMIDITY HIGH", 10, 55, 1);
     digitalWrite(LED_HUM, HIGH);
-    delay(30);
-    digitalWrite(LED_HUM,LOW);
+    print_line("HUMIDITY HIGH", 10, 55, 1);
+    digitalWrite(LED_HUM, LOW);
   } else if (data.humidity < 60) {
+    digitalWrite(LED_HUM, HIGH);
     print_line("HUMIDITY LOW", 10, 55, 1);
     digitalWrite(LED_HUM, HIGH);
-    delay(30);
-    digitalWrite(LED_HUM,LOW);
   }
 }
