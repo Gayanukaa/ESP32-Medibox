@@ -4,10 +4,6 @@
 #include <DHTesp.h>
 #include <WiFi.h>
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET -1
-
 // Pin Definitions
 #define BUZZER 4
 #define LED_1 15
@@ -21,13 +17,19 @@
 
 // NTP Configuration
 #define NTP_SERVER     "pool.ntp.org"
-#define UTC_OFFSET     19800
 #define UTC_OFFSET_DST 0
+int UTC_OFFSET = 19800;    
+int offsets[] = {0, 0} ; //Default set for IST time zone
+int offset_hours = 5;
+int offset_minutes = 30;
 
 // Initialize DHT Sensor
 DHTesp dhtSensor;
 
 // OLED Display Configuration
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
@@ -48,7 +50,6 @@ int alarm_hours[] = {12, 12, 12};
 int alarm_minutes[] = {27, 27, 27};
 bool alarm_triggered[] = {false, false, false};
 
-
 // Musical notes for the buzzer
 int n_notes = 8;
 int C = 262;
@@ -64,11 +65,9 @@ int notes[] = {C, D, E, F, G, A, B, C_H};
 // User interface configuration
 int current_mode = 0;
 int max_modes = 5;
-String modes[] = {"1 - Set Time", "2 - Set Alarm 1", "3 - Set Alarm 2", "4 - Set Alarm 3", "5 - Disable Alarms"};
+String modes[] = {"1 - Set   Time Zone", "2 - Set   Alarm 1", "3 - Set   Alarm 2", "4 - Set   Alarm 3", "5- Disable Alarms"};
 
 void setup() {
-  // Setup function - runs once
-
   // Initialize DHT Sensor
   dhtSensor.setup(DHTPIN, DHTesp::DHT22);
 
@@ -107,17 +106,13 @@ void setup() {
   // Configure NTP time synchronization
   configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
 
-  // Clear OLED display
   display.clearDisplay();
 
-  // Display welcome message
   print_line("Welcome to MediBox!", 0, 10, 2);
   display.clearDisplay();
 }
 
 void loop() {
-  // Main loop function
-
   // Update time and check for alarms
   update_time_with_check_alarm();
 
@@ -128,7 +123,7 @@ void loop() {
   }
 
   // Check temperature and humidity
-  check_temp();
+  check_temp_and_hum();
 }
 
 // Function to print a line on the OLED display
@@ -277,65 +272,6 @@ void go_to_menu() {
   }
 }
 
-// Function to set the time
-void set_time() {
-  int temp_hour = hours;
-  while (true) {
-    display.clearDisplay();
-    print_line("Enter hour: " + String(temp_hour), 0, 0, 2);
-
-    int pressed = wait_for_button_press();
-    if (pressed == PB_UP) {
-      delay(200);
-      temp_hour += 1;
-      temp_hour = temp_hour % 24;
-    } else if (pressed == PB_DOWN) {
-      delay(200);
-      temp_hour -= 1;
-      if (temp_hour < 0) {
-        temp_hour = 23;
-      }
-    } else if (pressed == PB_OK) {
-      delay(200);
-      hours = temp_hour;
-      break;
-    } else if (pressed == PB_CANCEL) {
-      delay(200);
-      break;
-    }
-  }
-
-  int temp_minute = minutes;
-  while (true) {
-    display.clearDisplay();
-    print_line("Enter minute: " + String(temp_minute), 0, 0, 2);
-
-    int pressed = wait_for_button_press();
-    if (pressed == PB_UP) {
-      delay(200);
-      temp_minute += 1;
-      temp_minute = temp_minute % 60;
-    } else if (pressed == PB_DOWN) {
-      delay(200);
-      temp_minute -= 1;
-      if (temp_minute < 0) {
-        temp_minute = 59;
-      }
-    } else if (pressed == PB_OK) {
-      delay(200);
-      minutes = temp_minute;
-      break;
-    } else if (pressed == PB_CANCEL) {
-      delay(200);
-      break;
-    }
-  }
-
-  display.clearDisplay();
-  print_line("Time is set", 0, 0, 2);
-  delay(1000);
-}
-
 // Function to set an alarm
 void set_alarm(int alarm) {
   int temp_hour = alarm_hours[alarm];
@@ -398,17 +334,29 @@ void set_alarm(int alarm) {
 // Function to run the selected mode
 void run_mode(int mode) {
   if (mode == 0) {
-    set_time();
+    set_timezone();
+    UTC_OFFSET = 0;
+    if (offsets[0] < 0 ) {
+      UTC_OFFSET = (UTC_OFFSET + (offsets[0] * 60 * 60  - 1 * offsets[1] * 60));
+    }
+    else {
+      UTC_OFFSET = UTC_OFFSET + (offsets[0] * 60 * 60 + offsets[1] * 60);
+    }
+    configTime(UTC_OFFSET, UTC_OFFSET_DST, NTP_SERVER);
   } else if (mode == 1 || mode == 2 || mode == 3) {
     set_alarm(mode - 1);
   } else if (mode == 4) {
     alarm_enabled = false;
-    print_line("Alarms Disabled", 0, 0, 2)
+    display.clearDisplay();
+    delay(200);
+    print_line("Alarms Disabled", 0, 0, 2);
+    delay(1000);
+    display.clearDisplay();
   }
 }
 
 // Function to check temperature and humidity
-void check_temp() {
+void check_temp_and_hum() {
   TempAndHumidity data = dhtSensor.getTempAndHumidity();
   if (data.temperature > 32) {
     digitalWrite(LED_TEMP, HIGH);
@@ -427,6 +375,77 @@ void check_temp() {
   } else if (data.humidity < 60) {
     digitalWrite(LED_HUM, HIGH);
     print_line("HUMIDITY LOW", 10, 55, 1);
-    digitalWrite(LED_HUM, HIGH);
+    digitalWrite(LED_HUM, LOW);
   }
+}
+
+// Function to change timezone
+void set_timezone() {
+  int temp_offset_hours = offset_hours;
+  while (true){
+    display.clearDisplay();
+    print_line("Enter offset hours: " + String(temp_offset_hours), 0, 0, 2);
+
+    int pressed = wait_for_button_press();
+
+    if (pressed == PB_UP) {
+      delay(200);
+      temp_offset_hours += 1;
+      temp_offset_hours = temp_offset_hours % 15; //max time zone was 14
+    }
+    else if (pressed == PB_DOWN) {
+      delay(200);
+      temp_offset_hours -= 1;
+      if (temp_offset_hours < -12) {
+        temp_offset_hours = 0;
+      }
+    }
+
+    else if (pressed == PB_OK) {
+      delay(200);
+      offset_hours = temp_offset_hours;
+      offsets[0] = offset_hours;
+      break;
+    }
+    else if (pressed == PB_CANCEL) {
+      delay(200);
+      break;
+    }
+  }
+
+  int temp_offset_minutes = offset_minutes;
+  while (true) {
+    display.clearDisplay();
+    print_line("Enter offset minutes: " + String(temp_offset_minutes), 0, 0, 2);
+
+    int pressed = wait_for_button_press(); // when a button is pressed it is assigned to this
+
+    if (pressed == PB_UP) {
+      delay(200);
+      temp_offset_minutes += 15;
+      temp_offset_minutes = temp_offset_minutes % 60;
+    }
+    else if (pressed == PB_DOWN) {
+      delay(200);
+      temp_offset_minutes -= 15;
+      if (temp_offset_minutes < 0) {
+        temp_offset_minutes = 60;
+      }
+    }
+
+    else if (pressed == PB_OK) {
+      delay(200);
+      offset_minutes = temp_offset_minutes;
+      offsets[1] = offset_minutes;
+      break;
+    }
+    else if (pressed == PB_CANCEL) {
+      delay(200);
+      break;
+    }
+  }
+
+  display.clearDisplay();
+  print_line("Timezone  is Set", 0, 0, 2);
+  delay(1000);
 }
