@@ -3,23 +3,22 @@
 #include "DHTesp.h"
 #include <NTPClient.h>
 #include <WiFiUdp.h>
-#include <Servo.h>
+#include <ESP32Servo.h>
 
-const int DHT_PIN = 15;
+#define DHT_PIN 15
 #define BUZZER 12
-#define LDR1 21
+#define LDR1 34
 #define LDR2 35
 #define MOTOR 18
 
-float minAngle = 15.0;       // Minimum angle
-float controllingFac = 0.75; // Controlling factor
-float rightLDR;
-float leftLDR;
-float intensity = 0;
+float minAngle = 30.0;   // Minimum angle of the shaded sliding window
+float controlFac = 0.75; // Controlling factor used to calculate motor angle
 
 Servo motor;
+
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
+
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
@@ -28,23 +27,20 @@ DHTesp dhtSensor;
 bool isScheduledON = false; // Flag to indicate if the schedule is enabled
 unsigned long scheduledOnTime;
 
-char tempAr[6];  // Store temperature
-char lightAr[6]; // Store light intensity
-const float analogMinValue = 0.0;
-const float analogMaxValue = 1023.0;
-const float intensityMin = 0.0;
-const float intensityMax = 1.0;
+char tempAr[6];  // Array to store temperature as a string
+char lightAr[6]; // Array to store light intensity as a string
 
 void setup()
 {
     Serial.begin(115200);
+    setupWifi(); // Connect to WiFi network
 
-    setupWifi();
-    setupMqtt();
+    setupMqtt(); // Setup MQTT communication
 
-    dhtSensor.setup(DHT_PIN, DHTesp::DHT22);
+    dhtSensor.setup(DHT_PIN, DHTesp::DHT22); // Setup DHT sensor
+
     timeClient.begin();
-    timeClient.setTimeOffset(5.5 * 3600);
+    timeClient.setTimeOffset(5.5 * 3600); // Set time offset (5.5 hours for Sri Lanka)
 
     pinMode(BUZZER, OUTPUT);
     digitalWrite(BUZZER, LOW);
@@ -52,26 +48,26 @@ void setup()
     pinMode(LDR1, INPUT);
     pinMode(LDR2, INPUT);
 
-    motor.attach(MOTOR, 600, 2400);
+    motor.attach(MOTOR, 500, 2400); // Attach servo motor to pin
 }
 
 void loop()
 {
     if (!mqttClient.connected())
     {
-        connectToBroker();
+        connectToBroker(); // Connect to MQTT broker if not already connected
     }
 
     mqttClient.loop();
 
-    updateTemperature();
+    updateTemperature(); // Read temperature from DHT sensor
     Serial.println(tempAr);
-    mqttClient.publish("MQTT-TEMP", tempAr);
+    mqttClient.publish("TEMP", tempAr); // Publish temperature to MQTT topic
 
-    checkSchedule();
+    checkSchedule(); // Check if the scheduled time has arrived
 
-    updateLightIntensity();                    // Read light intensity from LDR
-    mqttClient.publish("MQTT-LIGHT", lightAr); // Publish light intensity to MQTT topic
+    updateLightIntensity();               // Read light intensity from LDR
+    mqttClient.publish("LIGHT", lightAr); // Publish light intensity to MQTT topic
 
     delay(1000);
 }
@@ -108,13 +104,13 @@ void receiveCallback(char *topic, byte *payload, unsigned int length)
         payloadCharAr[i] = (char)payload[i];
     }
 
-    Serial.println();
+    Serial.println(":");
 
-    if (strcmp(topic, "MQTT-ON-OFF") == 0)
+    if (strcmp(topic, "MAIN-ON-OFF") == 0)
     {
         buzzerOn(payloadCharAr[0] == '1');
     }
-    else if (strcmp(topic, "MQTT-SCH-ON") == 0)
+    else if (strcmp(topic, "SCH-ESP-ON") == 0)
     {
         if (payloadCharAr[0] == 'N')
         {
@@ -126,50 +122,50 @@ void receiveCallback(char *topic, byte *payload, unsigned int length)
             scheduledOnTime = atol(payloadCharAr);
         }
     }
-    if (strcmp(topic, "MQTT-MIN-ANG") == 0)
+    if (strcmp(topic, "MINIMUM-ANG") == 0)
     {
         minAngle = atof(payloadCharAr);
         Serial.println(minAngle);
     }
-    if (strcmp(topic, "MQTT-CTRL-FAC") == 0)
+    if (strcmp(topic, "CONTROL-FAC") == 0)
     {
-        controllingFac = atof(payloadCharAr);
-        Serial.println(controllingFac);
+        controlFac = atof(payloadCharAr);
+        Serial.println(controlFac);
     }
-    if (strcmp(topic, "MQTT-CHOOSE-MED") == 0)
+    if (strcmp(topic, "DROP-DOWN") == 0)
     {
         if (payloadCharAr[0] == 'A')
         {
-            minAngle = 30;
-            controllingFac = 0.5;
+            minAngle = 20;
+            controlFac = 0.5;
             Serial.println(minAngle);
-            Serial.println(controllingFac);
+            Serial.println(controlFac);
         }
         else if (payloadCharAr[0] == 'B')
         {
-            minAngle = 45;
-            controllingFac = 0.3;
+            minAngle = 30;
+            controlFac = 0.7;
             Serial.println(minAngle);
-            Serial.println(controllingFac);
+            Serial.println(controlFac);
         }
         else if (payloadCharAr[0] == 'C')
         {
-            minAngle = 60;
-            controllingFac = 0.8;
+            minAngle = 25;
+            controlFac = 0.8;
             Serial.println(minAngle);
-            Serial.println(controllingFac);
+            Serial.println(controlFac);
         }
-        else if (payloadCharAr[0] == 'X')
+        else if (payloadCharAr[0] == 'M')
         {
-            if (strcmp(topic, "MQTT-MIN-ANG") == 0)
+            if (strcmp(topic, "MINIMUM-ANG") == 0)
             {
                 minAngle = atof(payloadCharAr);
                 Serial.println(minAngle);
             }
-            if (strcmp(topic, "MQTT-CTRL-FAC") == 0)
+            if (strcmp(topic, "CONTROL-FAC") == 0)
             {
-                controllingFac = atof(payloadCharAr);
-                Serial.println(controllingFac);
+                controlFac = atof(payloadCharAr);
+                Serial.println(controlFac);
             }
         }
     }
@@ -180,14 +176,14 @@ void connectToBroker()
     while (!mqttClient.connected())
     {
         Serial.println("Attempting MQTT connetion...");
-        if (mqttClient.connect("ESP-55200255"))
+        if (mqttClient.connect("ESP-9813247900"))
         {
             Serial.println("Connected");
-            mqttClient.subscribe("MQTT-ON-OFF");
-            mqttClient.subscribe("MQTT-SCH-ON");
-            mqttClient.subscribe("MQTT-CHOOSE-MED");
-            mqttClient.subscribe("MQTT-MIN-ANG");
-            mqttClient.subscribe("MQTT-CTRL-FAC");
+            mqttClient.subscribe("MAIN-ON-OFF");
+            mqttClient.subscribe("SCH-ESP-ON");
+            mqttClient.subscribe("DROP-DOWN");
+            mqttClient.subscribe("MINIMUM-ANG");
+            mqttClient.subscribe("CONTROL-FAC");
         }
         else
         {
@@ -204,29 +200,34 @@ void updateTemperature()
     String(data.temperature, 2).toCharArray(tempAr, 6);
 }
 
-// Adjust the position of the shaded sliding window based on light intensity
 void updateLightIntensity()
 {
-    rightLDR = analogRead(LDR1);
-    leftLDR = analogRead(LDR2);
+    const float analogMinValue = 0.0;    // Minimum analogRead value
+    const float analogMaxValue = 1023.0; // Maximum analogRead value
+    const float intensityMin = 0.0;      // Minimum intensity value
+    const float intensityMax = 1.0;      // Maximum intensity value
+
+    float rightLDR = analogRead(LDR1);
+    float leftLDR = analogRead(LDR2);
+    float intensity = 0;
 
     if (rightLDR > leftLDR)
     {
         if (rightLDR <= 1023)
         {
             intensity = (rightLDR - analogMinValue) / (analogMaxValue - analogMinValue);
-            Serial.println("Right DR " + String(rightLDR) + "  " + String(intensity));
-            mqttClient.publish("MQTT-LIGHT-INTENSITY", "RIGHT-LDR");
+            Serial.println("rightLDR " + String(rightLDR) + "  " + String(intensity));
+            mqttClient.publish("MAX-LIGHT-INTENSITY", "RIGHT LDR");
             String(intensity, 2).toCharArray(lightAr, 6);
-            AdjustServoMotor(intensity, 0.5);
+            AdjustServoMotor(intensity, 0.5); // Adjust the position of the shaded sliding window based on light intensity
         }
         else
         {
             intensity = 1;
             String(intensity, 2).toCharArray(lightAr, 6);
-            Serial.println("Right LDR " + String(rightLDR) + "  " + String(intensity));
-            mqttClient.publish("MQTT-LIGHT-INTENSITY", "RIGHT-LDR");
-            AdjustServoMotor(intensity, 0.5);
+            Serial.println("rightLDR " + String(rightLDR) + "  " + String(intensity));
+            mqttClient.publish("MAX-LIGHT-INTENSITY", "RIGHT LDR");
+            AdjustServoMotor(intensity, 0.5); // Adjust the position of the shaded sliding window based on light intensity
         }
     }
     else
@@ -235,7 +236,7 @@ void updateLightIntensity()
         {
             intensity = (leftLDR - analogMinValue) / (analogMaxValue - analogMinValue);
             Serial.println("leftLDR " + String(leftLDR) + "  " + String(intensity));
-            mqttClient.publish("MQTT-LIGHT-INTENSITY", "LEFT-LDR");
+            mqttClient.publish("MAX-LIGHT-INTENSITY", "LEFT LDR");
             String(intensity, 2).toCharArray(lightAr, 6);
             AdjustServoMotor(intensity, 1.5);
         }
@@ -244,9 +245,10 @@ void updateLightIntensity()
             intensity = 1;
             String(intensity, 2).toCharArray(lightAr, 6);
             Serial.println("leftLDR " + String(leftLDR) + "  " + String(intensity));
-            mqttClient.publish("MQTT-LIGHT-INTENSITY", "LEFT-LDR");
-            AdjustServoMotor(intensity, 1.5);
+            mqttClient.publish("MAX-LIGHT-INTENSITY", "LEFT LDR");
+            AdjustServoMotor(intensity, 1.5); // Adjust the position of the shaded sliding window based on light intensity
         }
+        // Adjust the position of the shaded sliding window based on light intensity
     }
 }
 
@@ -271,7 +273,7 @@ void setupWifi()
 unsigned long getTime()
 {
     timeClient.update();
-    return timeClient.getEpochTime();
+    return timeClient.getEpochTime(); // Get current time from NTP server
 }
 
 void checkSchedule()
@@ -279,22 +281,22 @@ void checkSchedule()
     if (isScheduledON)
     {
         unsigned long currentTime = getTime();
-        Serial.println("Current Time is " + String(currentTime));
-        Serial.println("Scheduled Time is " + String(scheduledOnTime));
+        Serial.println("currentTime " + String(currentTime));
+        Serial.println("scheduledOnTime " + String(scheduledOnTime));
         if (currentTime > scheduledOnTime)
         {
             buzzerOn(true);
             isScheduledON = false;
-            mqttClient.publish("MQTT-MQTT-ON-OFF-ESP", "1");
-            mqttClient.publish("MQTT-MQTT-SCH-ON", "0");
-            Serial.println("Schedule ON");
+            mqttClient.publish("MAIN-ON-OFF", "1");
+            mqttClient.publish("SCH-ESP-ON", "0");
+            Serial.println("Scheduled ON");
         }
     }
 }
 
 void AdjustServoMotor(double lightintensity, double D)
 {
-    double angle = minAngle * D + (180.0 - minAngle) * lightintensity * controllingFac; // Calculate the angle based on light intensity
+    double angle = minAngle * D + (180.0 - minAngle) * lightintensity * controlFac; // Calculate the angle based on light intensity
     Serial.println(angle);
     motor.write(angle); // Set the angle of the servo motor to adjust the shaded sliding window
 }
