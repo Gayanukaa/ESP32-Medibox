@@ -4,6 +4,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <ESP32Servo.h>
+#include <ArduinoJson.h>
 
 const int DHT_PIN = 15;
 #define BUZZER 12
@@ -19,14 +20,15 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
+JsonDocument packet;
 
 DHTesp dhtSensor;
 
 bool isScheduledON = false; // Flag to indicate if the schedule is enabled
 unsigned long scheduledOnTime;
 
-char tempAr[6];  // Store temperature
-char lightAr[6]; // Store light intensity
+char tempAr[6]; // Store temperature
+// char lightAr[6]; // Store light intensity
 const float analogMinValue = 0.0;
 const float analogMaxValue = 1023.0;
 const float intensityMin = 0.0;
@@ -67,8 +69,7 @@ void loop()
 
     checkSchedule();
 
-    updateLightIntensity();                    // Read light intensity from LDR
-    mqttClient.publish("MQTT-LIGHT", lightAr); // Publish light intensity to MQTT topic
+    updateLightIntensity(); // Read light intensity from LDR
 
     delay(1000);
 }
@@ -207,46 +208,46 @@ void updateLightIntensity()
     float rightLDR = analogRead(LDR1);
     float leftLDR = analogRead(LDR2);
     float intensity = 0;
+    char dataJson[50];
 
     if (rightLDR > leftLDR)
     {
+        packet["LDR"] = "Right LED";
         if (rightLDR <= 1023)
         {
             intensity = (rightLDR - analogMinValue) / (analogMaxValue - analogMinValue);
             Serial.print("Right LDR " + String(intensity) + " intensity");
-            // mqttClient.publish("MQTT-LIGHT-INTENSITY", String(intensity));
             AdjustServoMotor(intensity, 0.5);
         }
         else
         {
             intensity = 1;
-            // String(intensity, 2).toCharArray(lightAr, 6);
             Serial.print("Right LDR " + String(intensity) + " intensity");
-            // mqttClient.publish("MQTT-LIGHT-INTENSITY", String(intensity));
             AdjustServoMotor(intensity, 0.5);
         }
     }
     else
     {
+        packet["LDR"] = "Left LED";
         if (leftLDR <= 1023)
         {
             intensity = (leftLDR - analogMinValue) / (analogMaxValue - analogMinValue);
             Serial.print("Left LDR " + String(intensity) + " intensity");
-            // String(intensity, 2).toCharArray(lightAr, 6);
-            // mqttClient.publish("MQTT-LIGHT-INTENSITY", lightAr);
             AdjustServoMotor(intensity, 1.5);
         }
         else
         {
             intensity = 1;
-            // String(intensity, 2).toCharArray(lightAr, 6);
             Serial.print("Left LDR " + String(intensity) + " intensity");
-            // mqttClient.publish("MQTT-LIGHT-INTENSITY", String(intensity));
             AdjustServoMotor(intensity, 1.5);
         }
     }
-    String(intensity, 2).toCharArray(lightAr, 6);
-    mqttClient.publish("MQTT-LIGHT-INTENSITY", lightAr);
+
+    packet["Intensity"] = String(intensity);
+    serializeJson(packet, dataJson);
+    // Serial.println(dataJson);
+
+    mqttClient.publish("MQTT-LIGHT-INTENSITY", dataJson);
 }
 
 void setupWifi()
