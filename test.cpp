@@ -64,8 +64,6 @@ void loop()
     mqttClient.loop();
 
     updateTemperature();
-    Serial.println(tempAr);
-    mqttClient.publish("MQTT-TEMP", tempAr);
 
     checkSchedule();
 
@@ -200,6 +198,10 @@ void updateTemperature()
 {
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
     String(data.temperature, 2).toCharArray(tempAr, 6);
+
+    Serial.println("Temperature is " + String(tempAr) + "°C");
+    mqttClient.publish("MQTT-TEMP", tempAr);
+    delay((1000));
 }
 
 // Adjust the position of the shaded sliding window based on light intensity
@@ -285,8 +287,7 @@ void checkSchedule()
         {
             buzzerOn(true);
             isScheduledON = false;
-            mqttClient.publish("MQTT-MQTT-ON-OFF-ESP", "1");
-            mqttClient.publish("MQTT-MQTT-SCH-ON", "0");
+            mqttClient.publish("MQTT-SCH-OFF-ESP", "0");
             Serial.println("Schedule ON");
         }
     }
