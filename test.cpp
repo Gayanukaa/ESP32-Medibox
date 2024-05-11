@@ -27,8 +27,8 @@ DHTesp dhtSensor;
 bool isScheduledON = false; // Flag to indicate if the schedule is enabled
 unsigned long scheduledOnTime;
 
-char tempAr[6]; // Store temperature
-// char lightAr[6]; // Store light intensity
+char tempAr[6];  // Store temperature
+char motorAr[6]; // Store light intensity
 const float analogMinValue = 0.0;
 const float analogMaxValue = 1023.0;
 const float intensityMin = 0.0;
@@ -199,7 +199,7 @@ void updateTemperature()
     TempAndHumidity data = dhtSensor.getTempAndHumidity();
     String(data.temperature, 2).toCharArray(tempAr, 6);
 
-    Serial.println("Temperature is " + String(tempAr) + "°C");
+    // Serial.println("Temperature is " + String(tempAr) + "°C");
     mqttClient.publish("MQTT-TEMP", tempAr);
     delay((1000));
 }
@@ -218,13 +218,13 @@ void updateLightIntensity()
         if (rightLDR <= 1023)
         {
             intensity = (rightLDR - analogMinValue) / (analogMaxValue - analogMinValue);
-            Serial.print("Right LDR " + String(intensity) + " intensity");
+            // Serial.print("Right LDR " + String(intensity) + " intensity");
             AdjustServoMotor(intensity, 0.5);
         }
         else
         {
             intensity = 1;
-            Serial.print("Right LDR " + String(intensity) + " intensity");
+            // Serial.print("Right LDR " + String(intensity) + " intensity");
             AdjustServoMotor(intensity, 0.5);
         }
     }
@@ -234,13 +234,13 @@ void updateLightIntensity()
         if (leftLDR <= 1023)
         {
             intensity = (leftLDR - analogMinValue) / (analogMaxValue - analogMinValue);
-            Serial.print("Left LDR " + String(intensity) + " intensity");
+            // Serial.print("Left LDR " + String(intensity) + " intensity");
             AdjustServoMotor(intensity, 1.5);
         }
         else
         {
             intensity = 1;
-            Serial.print("Left LDR " + String(intensity) + " intensity");
+            // Serial.print("Left LDR " + String(intensity) + " intensity");
             AdjustServoMotor(intensity, 1.5);
         }
     }
@@ -299,4 +299,6 @@ void AdjustServoMotor(double lightintensity, double D)
     angle = min(angle, 180.0);
     Serial.println(" and new angle: " + String(angle) + "°");
     motor.write(angle); // Set the angle of the servo motor to adjust the shaded sliding window
+    String(angle - 90, 2).toCharArray(motorAr, 6);
+    mqttClient.publish("MQTT-MOTOR-ANG", motorAr);
 }
