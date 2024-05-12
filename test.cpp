@@ -14,6 +14,10 @@ const int DHT_PIN = 15;
 
 float minAngle = 30.0;       // Minimum angle
 float controllingFac = 0.75; // Controlling factor
+float customAngle = 30.0;
+float customControlFac = 0.1;
+String angString;
+String factString;
 
 Servo motor;
 WiFiClient espClient;
@@ -21,14 +25,18 @@ PubSubClient mqttClient(espClient);
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 JsonDocument packet;
-
+JsonDocument cusPacket;
 DHTesp dhtSensor;
 
 bool isScheduledON = false; // Flag to indicate if the schedule is enabled
 unsigned long scheduledOnTime;
 
-char tempAr[6];  // Store temperature
-char motorAr[6]; // Store light intensity
+// Store temperature, motor angle, minimum angle, controlling factor
+char tempAr[6];
+char motorAr[6];
+char angleAr[6];
+char ctrlAr[6];
+
 const float analogMinValue = 0.0;
 const float analogMaxValue = 1023.0;
 const float intensityMin = 0.0;
@@ -52,6 +60,14 @@ void setup()
     pinMode(LDR2, INPUT);
 
     motor.attach(MOTOR, 600, 2400);
+
+    connectToBroker();
+    // String(minAngle, 2).toCharArray(angleAr, 6);
+    // String(controllingFac, 2).toCharArray(ctrlAr, 6);
+    // customAngle = 30;
+    // customControlFac = 0;
+    mqttClient.publish("MQTT-SET-ANG", "30");
+    mqttClient.publish("MQTT-SET-FAC", "0.75");
 }
 
 void loop()
@@ -132,41 +148,86 @@ void receiveCallback(char *topic, byte *payload, unsigned int length)
         controllingFac = atof(payloadCharAr);
         Serial.println(controllingFac);
     }
-    if (strcmp(topic, "MQTT-CHOOSE-MED") == 0)
+    if (strcmp(topic, "MQTT-DROP-DOWN") == 0)
     {
-        if (payloadCharAr[0] == 'A')
+        if (payloadCharAr[0] == 'D') // default
+        {
+            minAngle = 30;
+            controllingFac = 0.75;
+            Serial.println("Angle:" + String(minAngle) + " and Control Factor: " + String(controllingFac));
+            mqttClient.publish("MQTT-SET-ANG", "30");
+            mqttClient.publish("MQTT-SET-FAC", "0.75");
+        }
+        else if (payloadCharAr[0] == 'A')
         {
             minAngle = 30;
             controllingFac = 0.5;
-            Serial.println(minAngle);
-            Serial.println(controllingFac);
+            Serial.println("Angle:" + String(minAngle) + " and Control Factor: " + String(controllingFac));
+            mqttClient.publish("MQTT-SET-ANG", "30");
+            mqttClient.publish("MQTT-SET-FAC", "0.5");
         }
         else if (payloadCharAr[0] == 'B')
         {
             minAngle = 45;
             controllingFac = 0.3;
-            Serial.println(minAngle);
-            Serial.println(controllingFac);
+            Serial.println("Angle:" + String(minAngle) + " and Control Factor: " + String(controllingFac));
+            mqttClient.publish("MQTT-SET-ANG", "45");
+            mqttClient.publish("MQTT-SET-FAC", "0.3");
         }
         else if (payloadCharAr[0] == 'C')
         {
             minAngle = 60;
             controllingFac = 0.8;
-            Serial.println(minAngle);
-            Serial.println(controllingFac);
+            Serial.println("Angle:" + String(minAngle) + " and Control Factor: " + String(controllingFac));
+            mqttClient.publish("MQTT-SET-ANG", "60");
+            mqttClient.publish("MQTT-SET-FAC", "0.8");
         }
         else if (payloadCharAr[0] == 'X')
         {
+            // char cusJson[50];
+            // String(customAngle, 1).toCharArray(angleAr, 6);
+            // String(customControlFac, 1).toCharArray(ctrlAr, 6);
+            // cusPacket["Angle"] = String(customAngle);
+            // cusPacket["Factor"] = String(customControlFac);
+            // serializeJson(cusPacket, cusJson);
+            // mqttClient.publish("MQTT-CUSTOM", cusJson);
+            angString = "";
+            angString += customAngle;
+            angString += " ";
+            factString = "";
+            factString += customControlFac;
+            factString += " ";
+            mqttClient.publish("MQTT-SET-ANG", angString);
+            mqttClient.publish("MQTT-SET-FAC", factString);
+
             if (strcmp(topic, "MQTT-MIN-ANG") == 0)
             {
                 minAngle = atof(payloadCharAr);
-                Serial.println(minAngle);
+                customAngle = minAngle;
+                Serial.println("New custom angle is: " + String(minAngle));
+                // String(minAngle, 2).toCharArray(angleAr, 6);
+                // mqttClient.publish("MQTT-SET-ANG", angleAr);
+                angString = "";
+                angString += customAngle;
+                angString += " ";
+                mqttClient.publish("MQTT-SET-ANG", angString);
+                // cusPacket["Angle"] = String(customAngle);
             }
             if (strcmp(topic, "MQTT-CTRL-FAC") == 0)
             {
                 controllingFac = atof(payloadCharAr);
-                Serial.println(controllingFac);
+                customControlFac = controllingFac;
+                // String(customControlFac, 2).toCharArray(ctrlAr, 6);
+                Serial.println("New custom factor is: " + String(controllingFac));
+                mqttClient.publish("MQTT-SET-FAC", ctrlAr);
+                cusPacket["Factor"] = String(customControlFac);
+                factString = "";
+                factString += customControlFac;
+                factString += " ";
+                mqttClient.publish("MQTT-SET-FAC", factString);
             }
+            // serializeJson(cusPacket, cusJson);
+            // mqttClient.publish("MQTT-CUSTOM", cusJson);
         }
     }
 }
@@ -181,14 +242,14 @@ void connectToBroker()
             Serial.println("Connected");
             mqttClient.subscribe("MQTT-ON-OFF");
             mqttClient.subscribe("MQTT-SCH-ON");
-            mqttClient.subscribe("MQTT-CHOOSE-MED");
+            mqttClient.subscribe("MQTT-DROP-DOWN");
             mqttClient.subscribe("MQTT-MIN-ANG");
             mqttClient.subscribe("MQTT-CTRL-FAC");
         }
         else
         {
-            Serial.println("failed");
-            Serial.println(mqttClient.state());
+            Serial.println("Connection failed");
+            // Serial.println(mqttClient.state());
             delay(5000);
         }
     }
@@ -297,7 +358,7 @@ void AdjustServoMotor(double lightintensity, double D)
 {
     double angle = minAngle * D + (180.0 - minAngle) * lightintensity * controllingFac; // Calculate the angle based on light intensity
     angle = min(angle, 180.0);
-    Serial.println(" and new angle: " + String(angle) + "°");
+    // Serial.println(" and new angle: " + String(angle) + "°");
     motor.write(angle); // Set the angle of the servo motor to adjust the shaded sliding window
     String(angle - 90, 2).toCharArray(motorAr, 6);
     mqttClient.publish("MQTT-MOTOR-ANG", motorAr);
