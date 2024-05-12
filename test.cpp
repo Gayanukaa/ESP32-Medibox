@@ -131,6 +131,8 @@ void receiveCallback(char *topic, byte *payload, unsigned int length)
         {
             isScheduledON = true;
             scheduledOnTime = atol(payloadCharAr);
+            Serial.println("Schedule ON");
+            Serial.println("Scheduled Time is " + String(scheduledOnTime));
         }
     }
     if (strcmp(topic, "MQTT-MIN-ANG") == 0)
@@ -314,14 +316,13 @@ void checkSchedule()
     if (isScheduledON)
     {
         unsigned long currentTime = getTime();
-        Serial.println("Current Time is " + String(currentTime));
-        Serial.println("Scheduled Time is " + String(scheduledOnTime));
         if (currentTime > scheduledOnTime)
         {
             buzzerOn(true);
-            isScheduledON = false;
             mqttClient.publish("MQTT-SCH-OFF-ESP", "0");
-            Serial.println("Schedule ON");
+            Serial.println("Current Time is " + String(currentTime));
+            Serial.println("Scheduled Time is " + String(scheduledOnTime));
+            isScheduledON = false;
         }
     }
 }
