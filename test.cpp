@@ -14,10 +14,8 @@ const int DHT_PIN = 15;
 
 float minAngle = 30.0;       // Minimum angle
 float controllingFac = 0.75; // Controlling factor
-float customAngle = 30.0;
-float customControlFac = 0.1;
-String angString;
-String factString;
+float customAngle;
+float customControlFac;
 
 Servo motor;
 WiFiClient espClient;
@@ -25,10 +23,9 @@ PubSubClient mqttClient(espClient);
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 JsonDocument packet;
-JsonDocument cusPacket;
 DHTesp dhtSensor;
 
-bool isScheduledON = false; // Flag to indicate if the schedule is enabled
+bool isScheduledON = false; // Indicate if the schedule is enabled
 unsigned long scheduledOnTime;
 
 // Store temperature, motor angle, minimum angle, controlling factor
@@ -61,11 +58,9 @@ void setup()
 
     motor.attach(MOTOR, 600, 2400);
 
-    connectToBroker();
-    // String(minAngle, 2).toCharArray(angleAr, 6);
-    // String(controllingFac, 2).toCharArray(ctrlAr, 6);
-    // customAngle = 30;
-    // customControlFac = 0;
+    // connectToBroker();
+    customAngle = 30;
+    customControlFac = 0;
     mqttClient.publish("MQTT-SET-ANG", "30");
     mqttClient.publish("MQTT-SET-FAC", "0.75");
 }
@@ -182,52 +177,29 @@ void receiveCallback(char *topic, byte *payload, unsigned int length)
             mqttClient.publish("MQTT-SET-ANG", "60");
             mqttClient.publish("MQTT-SET-FAC", "0.8");
         }
-        else if (payloadCharAr[0] == 'X')
+        else if (payloadCharAr[0] == 'X') // Custom
         {
-            // char cusJson[50];
-            // String(customAngle, 1).toCharArray(angleAr, 6);
-            // String(customControlFac, 1).toCharArray(ctrlAr, 6);
-            // cusPacket["Angle"] = String(customAngle);
-            // cusPacket["Factor"] = String(customControlFac);
-            // serializeJson(cusPacket, cusJson);
-            // mqttClient.publish("MQTT-CUSTOM", cusJson);
-            angString = "";
-            angString += customAngle;
-            angString += " ";
-            factString = "";
-            factString += customControlFac;
-            factString += " ";
-            mqttClient.publish("MQTT-SET-ANG", angString);
-            mqttClient.publish("MQTT-SET-FAC", factString);
+            String(customAngle, 2).toCharArray(angleAr, 6);
+            String(customControlFac, 2).toCharArray(ctrlAr, 6);
+            mqttClient.publish("MQTT-SET-ANG", angleAr);
+            mqttClient.publish("MQTT-SET-FAC", ctrlAr);
 
             if (strcmp(topic, "MQTT-MIN-ANG") == 0)
             {
                 minAngle = atof(payloadCharAr);
                 customAngle = minAngle;
-                Serial.println("New custom angle is: " + String(minAngle));
-                // String(minAngle, 2).toCharArray(angleAr, 6);
-                // mqttClient.publish("MQTT-SET-ANG", angleAr);
-                angString = "";
-                angString += customAngle;
-                angString += " ";
-                mqttClient.publish("MQTT-SET-ANG", angString);
-                // cusPacket["Angle"] = String(customAngle);
+                // Serial.println("New custom angle is: " + String(minAngle));
+                String(minAngle, 2).toCharArray(angleAr, 6);
+                mqttClient.publish("MQTT-SET-ANG", angleAr);
             }
             if (strcmp(topic, "MQTT-CTRL-FAC") == 0)
             {
                 controllingFac = atof(payloadCharAr);
                 customControlFac = controllingFac;
-                // String(customControlFac, 2).toCharArray(ctrlAr, 6);
-                Serial.println("New custom factor is: " + String(controllingFac));
+                String(customControlFac, 2).toCharArray(ctrlAr, 6);
+                // Serial.println("New custom factor is: " + String(controllingFac));
                 mqttClient.publish("MQTT-SET-FAC", ctrlAr);
-                cusPacket["Factor"] = String(customControlFac);
-                factString = "";
-                factString += customControlFac;
-                factString += " ";
-                mqttClient.publish("MQTT-SET-FAC", factString);
             }
-            // serializeJson(cusPacket, cusJson);
-            // mqttClient.publish("MQTT-CUSTOM", cusJson);
         }
     }
 }
@@ -248,8 +220,8 @@ void connectToBroker()
         }
         else
         {
-            Serial.println("Connection failed");
-            // Serial.println(mqttClient.state());
+            Serial.print("Connection failed with state: ");
+            Serial.println(mqttClient.state());
             delay(5000);
         }
     }
