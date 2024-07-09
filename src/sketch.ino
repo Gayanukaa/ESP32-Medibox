@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <DHT.h>
+#include <DHTesp.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <NTPClient.h>
@@ -46,7 +46,7 @@ int offset_hours = 5;
 int offset_minutes = 30;
 
 // Initialize DHT Sensor
-DHT dhtSensor(DHTPIN, DHT22);
+DHTesp dhtSensor;
 
 // OLED Display Configuration
 #define SCREEN_WIDTH 128
@@ -131,7 +131,7 @@ void setup() {
   setupWifi();
   setupMqtt();
 
-  //dhtSensor.setup(DHTPIN, DHTesp::DHT22);
+  dhtSensor.setup(DHTPIN, DHTesp::DHT22);
   timeClient.begin();
   timeClient.setTimeOffset(5.5 * 3600);
 
@@ -609,27 +609,22 @@ void run_mode(int mode) {
 
 // Function to check temperature and humidity
 void check_temp_and_hum() {
-  float temperature = dhtSensor.readTemperature();
-  float humidity = dhtSensor.readHumidity();
-  //TempAndHumidity data = dhtSensor.getTempAndHumidity();
-  if (temperature > 32)
-  {
+  TempAndHumidity data = dhtSensor.getTempAndHumidity();
+  if (data.temperature > 32) {
     digitalWrite(LED_TEMP, HIGH);
     print_line("TEMPETATURE HIGH", 10, 45, 1);
     digitalWrite(LED_TEMP,LOW);
-  }
-  else if (temperature < 26)
-  {
+  } else if (data.temperature < 26) {
     digitalWrite(LED_TEMP, HIGH);
     print_line("TEMPETATURE LOW", 10, 45, 1);
     digitalWrite(LED_TEMP,LOW);
   }
 
-  if (humidity > 80) {
+  if (data.humidity > 80) {
     digitalWrite(LED_HUM, HIGH);
     print_line("HUMIDITY HIGH", 10, 55, 1);
     digitalWrite(LED_HUM, LOW);
-  } else if (humidity < 60) {
+  } else if (data.humidity < 60) {
     digitalWrite(LED_HUM, HIGH);
     print_line("HUMIDITY LOW", 10, 55, 1);
     digitalWrite(LED_HUM, LOW);
@@ -639,14 +634,12 @@ void check_temp_and_hum() {
 // Update temperature reading and publish to MQTT
 void updateTemperature()
 {
-  float temperature = dhtSensor.readTemperature();
-  float humidity = dhtSensor.readHumidity();
-  //TempAndHumidity data = dhtSensor.getTempAndHumidity();
-  String(temperature, 2).toCharArray(tempAr, 6);
+    TempAndHumidity data = dhtSensor.getTempAndHumidity();
+    String(data.temperature, 2).toCharArray(tempAr, 6);
 
-  // Serial.println("Temperature is " + String(tempAr) + "°C");
-  mqttClient.publish("MQTT-TEMP", tempAr);
-  delay((1000));
+    //Serial.println("Temperature is " + String(tempAr) + "°C");
+    mqttClient.publish("MQTT-TEMP", tempAr);
+    delay((1000));
 }
 
 // Function to change timezone
