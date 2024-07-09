@@ -1,4 +1,4 @@
-# ESP32 HTTP Server Example
+# ESP32 Medibox
 
 ESP32 web server example: control 2 LEDs from a web page hosted on the ESP32.
 
@@ -17,3 +17,6 @@ pio run
 To simulate this project, install [Wokwi for VS Code](https://marketplace.visualstudio.com/items?itemName=wokwi.wokwi-vscode). Open the project directory in Visual Studio Code, press **F1** and select "Wokwi: Start Simulator".
 
 Once the simulation is running, open http://localhost:8180 in your web browser to interact with the simulated HTTP server.
+
+## Wokwi Library List
+See https://docs.wokwi.com/guides/libraries

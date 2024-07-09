@@ -275,6 +275,7 @@ void go_to_menu() {
 // Function to set an alarm
 void set_alarm(int alarm) {
   int temp_hour = alarm_hours[alarm];
+  alarm_enabled = true;
   while (true) {
     display.clearDisplay();
     print_line("Enter hour: " + String(temp_hour), 0, 0, 2);
