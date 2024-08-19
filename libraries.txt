@@ -4,3 +4,8 @@
 Adafruit GFX Library
 Adafruit SSD1306
 DHT sensor library for ESPx
+PubSubClient
+ArduinoJson
+WiFi
+NTPClient
+ESP32Servo

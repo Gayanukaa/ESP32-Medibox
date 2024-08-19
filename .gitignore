@@ -35,6 +35,9 @@
 *.i*86
 *.x86_64
 *.hex
+.pio
+.vscode/launch.json
+.vscode/c_cpp_properties.json
 
 # Debug files
 *.dSYM/
@@ -50,3 +53,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#Other files
+commands.txt

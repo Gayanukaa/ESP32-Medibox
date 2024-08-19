@@ -1,0 +1,1236 @@
+[
+    {
+        "id": "2bb68a1b4254251d",
+        "type": "tab",
+        "label": "Flow G - 210036D",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "d50742373a45b25a",
+        "type": "mqtt in",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-TEMP",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "5698786a385e05ee",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 90,
+        "y": 260,
+        "wires": [
+            [
+                "6ada31f79f7512d5",
+                "8966d842c0e06d32"
+            ]
+        ]
+    },
+    {
+        "id": "6ada31f79f7512d5",
+        "type": "ui_gauge",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "group": "adfb9ff1ab0faa9e",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Temperature Gauge",
+        "label": "units",
+        "format": "{{payload}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#f4ed25",
+            "#ffa50a",
+            "#ff0000"
+        ],
+        "seg1": "15",
+        "seg2": "30",
+        "diff": false,
+        "className": "",
+        "x": 380,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "8966d842c0e06d32",
+        "type": "ui_chart",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "group": "adfb9ff1ab0faa9e",
+        "order": 2,
+        "width": 6,
+        "height": 4,
+        "label": "Temperature vs Time",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "cubic",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "50",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#097479",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 380,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a7b81f6c4426cd9a",
+        "type": "ui_switch",
+        "z": "2bb68a1b4254251d",
+        "name": "Main Switch",
+        "label": "Switch",
+        "tooltip": "",
+        "group": "a367432217a1b766",
+        "order": 1,
+        "width": "5",
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "1",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "0",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 530,
+        "y": 340,
+        "wires": [
+            [
+                "6011988b92e77931"
+            ]
+        ]
+    },
+    {
+        "id": "6011988b92e77931",
+        "type": "mqtt out",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-ON-OFF",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "5698786a385e05ee",
+        "x": 740,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "286ceb7952f3f08b",
+        "type": "change",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "isScheduled",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 760,
+        "y": 420,
+        "wires": [
+            [
+                "722280c3c8f89fa8"
+            ]
+        ]
+    },
+    {
+        "id": "39c416b59df66ae8",
+        "type": "ui_date_picker",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "label": "ON Date",
+        "group": "e299e376d06449ff",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "topic": "payload",
+        "topicType": "msg",
+        "className": "",
+        "x": 560,
+        "y": 480,
+        "wires": [
+            [
+                "773ed992b0746103"
+            ]
+        ]
+    },
+    {
+        "id": "08a131272a4784da",
+        "type": "ui_text_input",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "label": "Time Input",
+        "tooltip": "",
+        "group": "e299e376d06449ff",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "time",
+        "delay": 300,
+        "topic": "payload",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 530,
+        "y": 540,
+        "wires": [
+            [
+                "3b310c4c7a9c0e80"
+            ]
+        ]
+    },
+    {
+        "id": "773ed992b0746103",
+        "type": "change",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "scheduledDate",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 750,
+        "y": 480,
+        "wires": [
+            [
+                "722280c3c8f89fa8"
+            ]
+        ]
+    },
+    {
+        "id": "3b310c4c7a9c0e80",
+        "type": "change",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "scheduledTime",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 750,
+        "y": 540,
+        "wires": [
+            [
+                "722280c3c8f89fa8"
+            ]
+        ]
+    },
+    {
+        "id": "722280c3c8f89fa8",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "checkSchedule",
+        "func": "let isScheduled=global.get(\"isScheduled\");\nlet scheduledDate = global.get(\"scheduledDate\");\nlet scheduledTime = global.get(\"scheduledTime\");\n\nif (isScheduled && scheduledDate && scheduledTime){\n    let schedule = scheduledDate + scheduledTime;\n\n    if (Date.now()>schedule){\n        return {\n            payload: \"OLDER\"\n        }\n    }else{\n        return {\n            payload: schedule\n        }\n    }\n}\nelse if (isScheduled===false){\n    return {\n        payload: \"NOT-SCHEDULED-ON\"\n    }\n}\nelse{\n    return{\n        payload: null\n    }\n}",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1000,
+        "y": 420,
+        "wires": [
+            [
+                "e4ebe7ecb84d2533"
+            ]
+        ]
+    },
+    {
+        "id": "e4ebe7ecb84d2533",
+        "type": "switch",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "NOT-SCHEDULED-ON",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "OLDER",
+                "vt": "str"
+            },
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "null"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 4,
+        "x": 1010,
+        "y": 500,
+        "wires": [
+            [
+                "517b0dab43785b99"
+            ],
+            [
+                "1d221ae0698434b5"
+            ],
+            [
+                "ea407b92996b6a6e"
+            ],
+            [
+                "9f234f85600f37fb"
+            ]
+        ]
+    },
+    {
+        "id": "517b0dab43785b99",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "setScheduleOFF",
+        "func": "return{\n    payload: \"NOT\"\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1250,
+        "y": 380,
+        "wires": [
+            [
+                "6d16b38c9d5858dd"
+            ]
+        ]
+    },
+    {
+        "id": "ea407b92996b6a6e",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "setScheduleON",
+        "func": "return{\n    payload: Math.round(msg.payload/1000)\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 440,
+        "wires": [
+            [
+                "6d16b38c9d5858dd",
+                "c8d8c88113b7ec93"
+            ]
+        ]
+    },
+    {
+        "id": "1d221ae0698434b5",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "setFutureTime",
+        "func": "return{\n    payload: \"Please enter a future time\"\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 500,
+        "wires": [
+            [
+                "3e47b512edd8cb79"
+            ]
+        ]
+    },
+    {
+        "id": "3e47b512edd8cb79",
+        "type": "ui_toast",
+        "z": "2bb68a1b4254251d",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 1450,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "9f234f85600f37fb",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "setError",
+        "func": "return{\n    payload: \"Please enter a valid date and time\"\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 560,
+        "wires": [
+            [
+                "3e47b512edd8cb79"
+            ]
+        ]
+    },
+    {
+        "id": "6c4ed9dbe4438d02",
+        "type": "ui_switch",
+        "z": "2bb68a1b4254251d",
+        "name": "Schedule Switch",
+        "label": "switch",
+        "tooltip": "",
+        "group": "e299e376d06449ff",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "payload",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 530,
+        "y": 420,
+        "wires": [
+            [
+                "286ceb7952f3f08b"
+            ]
+        ]
+    },
+    {
+        "id": "6d16b38c9d5858dd",
+        "type": "mqtt out",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-SCH-ON",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "5698786a385e05ee",
+        "x": 1460,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "eb5aead247cc7eb6",
+        "type": "mqtt in",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-SCH-OFF-ESP",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "5698786a385e05ee",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 120,
+        "y": 400,
+        "wires": [
+            [
+                "ec84e1e5bb33ac1d",
+                "c479feb45e888550"
+            ]
+        ]
+    },
+    {
+        "id": "c479feb45e888550",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "scheduleAction",
+        "func": "\nreturn {\n    payload: msg.payload==1\n};",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 420,
+        "wires": [
+            [
+                "6c4ed9dbe4438d02"
+            ]
+        ]
+    },
+    {
+        "id": "ec84e1e5bb33ac1d",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "buzzerAction",
+        "func": "if (msg.payload==0){\n    return{\n        payload: '1'\n    }\n}else{\n    return{\n        payload: '0'\n    }\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 340,
+        "wires": [
+            [
+                "a7b81f6c4426cd9a"
+            ]
+        ]
+    },
+    {
+        "id": "9b42f36e2f16ee94",
+        "type": "mqtt in",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-LIGHT-INTENSITY",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "5698786a385e05ee",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "3d7ca4b70de3c86b",
+                "d29de0e2ae3b213d"
+            ]
+        ]
+    },
+    {
+        "id": "76f30e01293b84f1",
+        "type": "ui_gauge",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "group": "aec5975599843f99",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Intensity Gauge",
+        "label": "Lux",
+        "format": "{{payload}}",
+        "min": "0",
+        "max": "1",
+        "colors": [
+            "#8aeef5",
+            "#097479",
+            "#0d213a"
+        ],
+        "seg1": "0.3",
+        "seg2": "0.6",
+        "diff": false,
+        "className": "",
+        "x": 600,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "466b153d9e6f3bef",
+        "type": "ui_chart",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "group": "aec5975599843f99",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "label": "Light intensity vs Time",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "cubic",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "50",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#097479",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 620,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9ac31063e0da1c39",
+        "type": "ui_slider",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "label": "Minimum Angle",
+        "tooltip": "",
+        "group": "a6ab9ea48d8c1571",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "topic",
+        "topicType": "msg",
+        "min": 0,
+        "max": "120",
+        "step": 1,
+        "className": "",
+        "x": 580,
+        "y": 700,
+        "wires": [
+            [
+                "9273be2237e181a7"
+            ]
+        ]
+    },
+    {
+        "id": "3ac8d4edeaa4a6dd",
+        "type": "ui_slider",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "label": "Controlling Factor",
+        "tooltip": "",
+        "group": "a6ab9ea48d8c1571",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "outs": "end",
+        "topic": "topic",
+        "topicType": "msg",
+        "min": 0,
+        "max": "1",
+        "step": "0.01",
+        "className": "",
+        "x": 590,
+        "y": 800,
+        "wires": [
+            [
+                "de8f83044fc1ad13"
+            ]
+        ]
+    },
+    {
+        "id": "9273be2237e181a7",
+        "type": "mqtt out",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-MIN-ANG",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "5698786a385e05ee",
+        "x": 830,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "de8f83044fc1ad13",
+        "type": "mqtt out",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-CTRL-FAC",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "5698786a385e05ee",
+        "x": 830,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "6c384afa3db1cf60",
+        "type": "ui_text",
+        "z": "2bb68a1b4254251d",
+        "group": "aec5975599843f99",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Max light intensity from",
+        "format": "{{msg.payload}}",
+        "layout": "row-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "17",
+        "color": "#ffffff",
+        "x": 620,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "c8d8c88113b7ec93",
+        "type": "debug",
+        "z": "2bb68a1b4254251d",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1420,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "104d08131c3cdd7d",
+        "type": "ui_dropdown",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "label": "Choose Med",
+        "tooltip": "",
+        "place": "Select option",
+        "group": "a6ab9ea48d8c1571",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "Standard",
+                "value": "D",
+                "type": "str"
+            },
+            {
+                "label": "Tablet A",
+                "value": "A",
+                "type": "str"
+            },
+            {
+                "label": "Tablet B",
+                "value": "B",
+                "type": "str"
+            },
+            {
+                "label": "Tablet C",
+                "value": "C",
+                "type": "str"
+            },
+            {
+                "label": "Custom",
+                "value": "X",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "topic",
+        "topicType": "msg",
+        "className": "",
+        "x": 90,
+        "y": 880,
+        "wires": [
+            [
+                "8b6134582de2112e",
+                "fea7c43ce2dfc17c"
+            ]
+        ]
+    },
+    {
+        "id": "8b6134582de2112e",
+        "type": "mqtt out",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-DROP-DOWN",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "bd17a1cac2a8f2f9",
+        "x": 400,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "3d7ca4b70de3c86b",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "passLightData",
+        "func": "return {\n    payload: parseFloat(msg.payload[\"Intensity\"]).toFixed(2)\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 100,
+        "wires": [
+            [
+                "76f30e01293b84f1",
+                "466b153d9e6f3bef"
+            ]
+        ]
+    },
+    {
+        "id": "d29de0e2ae3b213d",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "passLdrName",
+        "func": "return {\n    payload: msg.payload[\"LDR\"]\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 180,
+        "wires": [
+            [
+                "6c384afa3db1cf60"
+            ]
+        ]
+    },
+    {
+        "id": "dbd7faad1b131706",
+        "type": "mqtt in",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-MOTOR-ANG",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "5698786a385e05ee",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 110,
+        "y": 600,
+        "wires": [
+            [
+                "f7731f324e6fa729"
+            ]
+        ]
+    },
+    {
+        "id": "f7731f324e6fa729",
+        "type": "ui_gauge",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "group": "59075254886c20e0",
+        "order": 1,
+        "width": "5",
+        "height": 3,
+        "gtype": "gage",
+        "title": "Motor Angle Gauge",
+        "label": "degrees",
+        "format": "{{payload}}",
+        "min": "-90",
+        "max": "90",
+        "colors": [
+            "#ffffff",
+            "#a8a8a8",
+            "#ffffff"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": true,
+        "className": "",
+        "x": 350,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "1843ddaf961bf6ec",
+        "type": "ui_toast",
+        "z": "2bb68a1b4254251d",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": true,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 550,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "fea7c43ce2dfc17c",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "controllerAction",
+        "func": "if (msg.payload== \"X\"){\n    return{\n        payload: \"Choose angle and control factor\",\n    }\n}else{\n    return{\n        payload: 'Angle and Control factor set'\n    }\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 940,
+        "wires": [
+            [
+                "1843ddaf961bf6ec"
+            ]
+        ]
+    },
+    {
+        "id": "b75aa6f309b60c7b",
+        "type": "mqtt in",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-SET-ANG",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "5698786a385e05ee",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 100,
+        "y": 700,
+        "wires": [
+            [
+                "6d69a1a77b0eb141"
+            ]
+        ]
+    },
+    {
+        "id": "a6c4c9b9a450c9fc",
+        "type": "mqtt in",
+        "z": "2bb68a1b4254251d",
+        "name": "",
+        "topic": "MQTT-SET-FAC",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "5698786a385e05ee",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 100,
+        "y": 800,
+        "wires": [
+            [
+                "933589a548ea1016"
+            ]
+        ]
+    },
+    {
+        "id": "6d69a1a77b0eb141",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "setMinAngle",
+        "func": "return{ \n    payload: msg.payload,\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 700,
+        "wires": [
+            [
+                "9ac31063e0da1c39",
+                "7ef53ce3650e9cf1"
+            ]
+        ]
+    },
+    {
+        "id": "933589a548ea1016",
+        "type": "function",
+        "z": "2bb68a1b4254251d",
+        "name": "setControlFactor",
+        "func": "return{ \n    payload: msg.payload,\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 800,
+        "wires": [
+            [
+                "3ac8d4edeaa4a6dd",
+                "acec782bf6bb4cf1"
+            ]
+        ]
+    },
+    {
+        "id": "7ef53ce3650e9cf1",
+        "type": "debug",
+        "z": "2bb68a1b4254251d",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "acec782bf6bb4cf1",
+        "type": "debug",
+        "z": "2bb68a1b4254251d",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "5698786a385e05ee",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "test.mosquitto.org/",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "adfb9ff1ab0faa9e",
+        "type": "ui_group",
+        "name": "Temperature",
+        "tab": "bafbba5121f34554",
+        "order": 3,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a367432217a1b766",
+        "type": "ui_group",
+        "name": "Main Switch",
+        "tab": "bafbba5121f34554",
+        "order": 1,
+        "disp": true,
+        "width": "5",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "e299e376d06449ff",
+        "type": "ui_group",
+        "name": "Schedule",
+        "tab": "bafbba5121f34554",
+        "order": 2,
+        "disp": true,
+        "width": 5,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "aec5975599843f99",
+        "type": "ui_group",
+        "name": "Light Intensity",
+        "tab": "bafbba5121f34554",
+        "order": 4,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a6ab9ea48d8c1571",
+        "type": "ui_group",
+        "name": "Controller",
+        "tab": "bafbba5121f34554",
+        "order": 5,
+        "disp": true,
+        "width": "5",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "bd17a1cac2a8f2f9",
+        "type": "mqtt-broker",
+        "name": "Light",
+        "broker": "https://test.mosquitto.org/",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "59075254886c20e0",
+        "type": "ui_group",
+        "name": "Motor",
+        "tab": "bafbba5121f34554",
+        "order": 6,
+        "disp": true,
+        "width": 5,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "bafbba5121f34554",
+        "type": "ui_tab",
+        "name": "Medibox",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
