@@ -2,8 +2,6 @@
 
 This project, **ESP32 Medibox**, is a smart medicine box designed to assist individuals in managing their medication schedules effectively. The system utilizes an ESP32 microcontroller to control various components, including sensors, actuators, and communication modules, to provide a comprehensive solution for medication management.
 
-## Overview
-
 <p>
  <img src="https://img.shields.io/github/license/Gayanukaa/ESP32-Medibox?style=flat&color=0080ff" alt="license">
  <img src="https://img.shields.io/github/last-commit/Gayanukaa/ESP32-Medibox?style=flat&logo=git&logoColor=white&color=0080ff" alt="last-commit">
@@ -32,7 +30,6 @@ The complete circuit diagram and simulation can be found on [Wokwi](https://wokw
 ## Table of Contents
 
 - [ESP32 Medibox](#esp32-medibox)
-  - [Overview](#overview)
   - [Circuit Diagram](#circuit-diagram)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
@@ -44,9 +41,7 @@ The complete circuit diagram and simulation can be found on [Wokwi](https://wokw
   - [Getting Started](#getting-started)
   - [Building](#building)
   - [Simulating](#simulating)
-  - [Contributing](#contributing)
   - [License](#license)
-  - [Contact](#contact)
 
 ## Features
 
@@ -164,20 +159,6 @@ To simulate this project, install [Wokwi for VS Code](https://marketplace.visual
 
 Wokwi allows you to test the functionality of your project without needing the physical hardware, making it easier to debug and validate your code.
 
-## Contributing
-
-Contributions are welcome! If you'd like to contribute to this project, please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch: `git checkout -b feature/your-feature-name`
-3. Make your changes and commit them: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Submit a pull request.
-
 ## License
 
 This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/).
-
-## Contact
-
-If you have any questions or suggestions, please feel free to reach out to us at [gayanukaamarasuriya@gmail.com](mailto:gayanukaamarasuriya@gmail.com).
